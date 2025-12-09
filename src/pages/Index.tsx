@@ -1,11 +1,71 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Header } from "@/components/layout/Header";
+import { Dashboard } from "@/components/sections/Dashboard";
+import { TradingBoard } from "@/components/sections/TradingBoard";
+import { DocumentGenerator } from "@/components/sections/DocumentGenerator";
+import { ComplianceEngine } from "@/components/sections/ComplianceEngine";
+import { LoanLifecycle } from "@/components/sections/LoanLifecycle";
+import { ESGIntelligence } from "@/components/sections/ESGIntelligence";
+
+const sectionConfig: Record<string, { title: string; subtitle: string }> = {
+  dashboard: { title: "Dashboard", subtitle: "Overview of your loan portfolio" },
+  documents: { title: "Document Generator", subtitle: "LMA-compliant document automation" },
+  trading: { title: "Trading Board", subtitle: "Real-time loan trading marketplace" },
+  compliance: { title: "Compliance Engine", subtitle: "Regulatory checks & audit trail" },
+  lifecycle: { title: "Loan Lifecycle", subtitle: "Covenant monitoring & payments" },
+  esg: { title: "ESG Intelligence", subtitle: "Sustainability scoring & green lending" },
+  users: { title: "Team Management", subtitle: "Manage team members and permissions" },
+  notifications: { title: "Notifications", subtitle: "Alerts and system messages" },
+  settings: { title: "Settings", subtitle: "Platform configuration" },
+};
 
 const Index = () => {
+  const [activeSection, setActiveSection] = useState("dashboard");
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case "dashboard":
+        return <Dashboard />;
+      case "trading":
+        return <TradingBoard />;
+      case "documents":
+        return <DocumentGenerator />;
+      case "compliance":
+        return <ComplianceEngine />;
+      case "lifecycle":
+        return <LoanLifecycle />;
+      case "esg":
+        return <ESGIntelligence />;
+      default:
+        return (
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-foreground mb-2">
+                {sectionConfig[activeSection]?.title || "Coming Soon"}
+              </h2>
+              <p className="text-muted-foreground">
+                This module is under development
+              </p>
+            </div>
+          </div>
+        );
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="flex h-screen bg-background overflow-hidden">
+      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header
+          title={sectionConfig[activeSection]?.title || "LMA NEXUS"}
+          subtitle={sectionConfig[activeSection]?.subtitle}
+        />
+        
+        <main className="flex-1 overflow-y-auto p-6">
+          {renderSection()}
+        </main>
       </div>
     </div>
   );
