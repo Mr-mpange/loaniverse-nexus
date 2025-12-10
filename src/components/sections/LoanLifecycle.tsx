@@ -1,31 +1,12 @@
 import { useState } from "react";
 import {
-  LineChart,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  BarChart3,
-  Filter,
-  ChevronRight,
+  LineChart, AlertTriangle, CheckCircle, Clock, Calendar, TrendingUp, BarChart3, Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { LoanOnboardingWizard } from "./LoanOnboardingWizard";
 
 interface Loan {
   id: string;
@@ -91,9 +72,19 @@ const statusConfig = {
 
 export function LoanLifecycle() {
   const [activeTab, setActiveTab] = useState<"overview" | "covenants" | "payments">("overview");
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Header with New Loan Button */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground">Loan Portfolio Management</h2>
+        <Button onClick={() => setWizardOpen(true)} variant="glow">
+          <Plus className="w-4 h-4 mr-2" />
+          New Loan Facility
+        </Button>
+      </div>
+
       {/* KPI Dashboard */}
       <div className="grid grid-cols-4 gap-4">
         <div className="glass-card p-5 glow-border">
@@ -259,6 +250,8 @@ export function LoanLifecycle() {
           </table>
         </div>
       )}
+
+      <LoanOnboardingWizard open={wizardOpen} onOpenChange={setWizardOpen} />
     </div>
   );
 }

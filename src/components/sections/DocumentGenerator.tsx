@@ -1,24 +1,12 @@
 import { useState } from "react";
 import {
-  FileText,
-  Plus,
-  Search,
-  Filter,
-  Download,
-  Eye,
-  Edit,
-  Copy,
-  MoreVertical,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Sparkles,
-  Scale,
-  FileCheck,
+  FileText, Plus, Search, Filter, Download, Eye, Edit, Copy, MoreVertical,
+  CheckCircle, Clock, AlertTriangle, Sparkles, Scale, FileCheck, Loader2, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { AIDocumentDialog } from "./documents/AIDocumentDialog";
 
 interface Clause {
   id: string;
@@ -65,29 +53,24 @@ const statusConfig = {
 
 export function DocumentGenerator() {
   const [activeTab, setActiveTab] = useState<"documents" | "clauses">("documents");
+  const [aiDialogOpen, setAIDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button
-            variant={activeTab === "documents" ? "default" : "outline"}
-            onClick={() => setActiveTab("documents")}
-          >
+          <Button variant={activeTab === "documents" ? "default" : "outline"} onClick={() => setActiveTab("documents")}>
             <FileText className="w-4 h-4 mr-2" />
             Documents
           </Button>
-          <Button
-            variant={activeTab === "clauses" ? "default" : "outline"}
-            onClick={() => setActiveTab("clauses")}
-          >
+          <Button variant={activeTab === "clauses" ? "default" : "outline"} onClick={() => setActiveTab("clauses")}>
             <Scale className="w-4 h-4 mr-2" />
             Clause Library
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="glow">
+          <Button variant="glow" onClick={() => setAIDialogOpen(true)}>
             <Sparkles className="w-4 h-4 mr-2" />
             Generate with AI
           </Button>
@@ -111,15 +94,11 @@ export function DocumentGenerator() {
       </div>
 
       {activeTab === "documents" ? (
-        /* Documents Grid */
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {documents.map((doc) => {
             const StatusIcon = statusConfig[doc.status].icon;
             return (
-              <div
-                key={doc.id}
-                className="glass-card p-5 glow-border hover:bg-card/90 transition-colors group"
-              >
+              <div key={doc.id} className="glass-card p-5 glow-border hover:bg-card/90 transition-colors group">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -130,13 +109,7 @@ export function DocumentGenerator() {
                       <p className="text-sm text-muted-foreground">{doc.type}</p>
                     </div>
                   </div>
-                  <div
-                    className={cn(
-                      "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
-                      statusConfig[doc.status].bg,
-                      statusConfig[doc.status].color
-                    )}
-                  >
+                  <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium", statusConfig[doc.status].bg, statusConfig[doc.status].color)}>
                     <StatusIcon className="w-3 h-3" />
                     <span className="capitalize">{doc.status}</span>
                   </div>
@@ -150,22 +123,9 @@ export function DocumentGenerator() {
                   <div>
                     <p className="section-header mb-1">Risk Score</p>
                     <div className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          "font-mono font-semibold",
-                          doc.riskScore >= 80 ? "text-success" : doc.riskScore >= 60 ? "text-warning" : "text-destructive"
-                        )}
-                      >
-                        {doc.riskScore}
-                      </span>
+                      <span className={cn("font-mono font-semibold", doc.riskScore >= 80 ? "text-success" : doc.riskScore >= 60 ? "text-warning" : "text-destructive")}>{doc.riskScore}</span>
                       <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={cn(
-                            "h-full rounded-full",
-                            doc.riskScore >= 80 ? "bg-success" : doc.riskScore >= 60 ? "bg-warning" : "bg-destructive"
-                          )}
-                          style={{ width: `${doc.riskScore}%` }}
-                        />
+                        <div className={cn("h-full rounded-full", doc.riskScore >= 80 ? "bg-success" : doc.riskScore >= 60 ? "bg-warning" : "bg-destructive")} style={{ width: `${doc.riskScore}%` }} />
                       </div>
                     </div>
                   </div>
@@ -176,22 +136,12 @@ export function DocumentGenerator() {
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <p className="text-xs text-muted-foreground">
-                    By {doc.author} • {doc.borrower}
-                  </p>
+                  <p className="text-xs text-muted-foreground">By {doc.author} • {doc.borrower}</p>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="iconSm">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="iconSm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="iconSm">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="iconSm">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
+                    <Button variant="ghost" size="iconSm"><Eye className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="iconSm"><Edit className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="iconSm"><Download className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="iconSm"><MoreVertical className="w-4 h-4" /></Button>
                   </div>
                 </div>
               </div>
@@ -199,7 +149,6 @@ export function DocumentGenerator() {
           })}
         </div>
       ) : (
-        /* Clause Library */
         <div className="glass-card glow-border overflow-hidden">
           <table className="w-full">
             <thead>
@@ -223,36 +172,17 @@ export function DocumentGenerator() {
                       <span className="font-medium text-foreground">{clause.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-4">
-                    <span className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground">
-                      {clause.category}
-                    </span>
-                  </td>
+                  <td className="px-4 py-4"><span className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground">{clause.category}</span></td>
                   <td className="px-4 py-4 text-center">
-                    <span
-                      className={cn(
-                        "font-mono font-semibold",
-                        clause.riskScore >= 80 ? "text-success" : clause.riskScore >= 60 ? "text-warning" : "text-destructive"
-                      )}
-                    >
-                      {clause.riskScore}
-                    </span>
+                    <span className={cn("font-mono font-semibold", clause.riskScore >= 80 ? "text-success" : clause.riskScore >= 60 ? "text-warning" : "text-destructive")}>{clause.riskScore}</span>
                   </td>
-                  <td className="px-4 py-4 text-center font-mono text-sm text-muted-foreground">
-                    v{clause.version}
-                  </td>
+                  <td className="px-4 py-4 text-center font-mono text-sm text-muted-foreground">v{clause.version}</td>
                   <td className="px-4 py-4 text-sm text-muted-foreground">{clause.lastUsed}</td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-center gap-1">
-                      <Button variant="ghost" size="iconSm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="iconSm">
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="iconSm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
+                      <Button variant="ghost" size="iconSm"><Eye className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="iconSm"><Copy className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="iconSm"><Edit className="w-4 h-4" /></Button>
                     </div>
                   </td>
                 </tr>
@@ -261,6 +191,8 @@ export function DocumentGenerator() {
           </table>
         </div>
       )}
+
+      <AIDocumentDialog open={aiDialogOpen} onOpenChange={setAIDialogOpen} />
     </div>
   );
 }
