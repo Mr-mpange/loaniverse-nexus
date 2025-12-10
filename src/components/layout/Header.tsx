@@ -1,6 +1,7 @@
-import { Search, Bell, User, HelpCircle } from "lucide-react";
+import { Search, Bell, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { UserMenu } from "./UserMenu";
 
 interface HeaderProps {
   title: string;
@@ -42,15 +43,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             <HelpCircle className="h-5 w-5" />
           </Button>
           <div className="w-px h-6 bg-border mx-2" />
-          <Button variant="ghost" className="gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-chart-4 flex items-center justify-center">
-              <User className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-medium">John Anderson</p>
-              <p className="text-[10px] text-muted-foreground">Loan Officer</p>
-            </div>
-          </Button>
+          <UserMenu />
         </div>
       </div>
     </header>
