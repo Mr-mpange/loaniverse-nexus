@@ -14,6 +14,8 @@ import {
   Zap,
   Users,
   Bell,
+  BarChart3,
+  Plug,
 } from "lucide-react";
 
 interface NavItem {
@@ -26,6 +28,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "documents", label: "Documents", icon: FileText, badge: "3", badgeType: "default" },
   { id: "trading", label: "Trading Board", icon: ArrowRightLeft, badge: "LIVE", badgeType: "success" },
   { id: "compliance", label: "Compliance", icon: Shield },
@@ -34,6 +37,7 @@ const navItems: NavItem[] = [
 ];
 
 const bottomNavItems: NavItem[] = [
+  { id: "integrations", label: "Integrations", icon: Plug },
   { id: "users", label: "Team", icon: Users },
   { id: "notifications", label: "Notifications", icon: Bell, badge: "5", badgeType: "destructive" },
   { id: "settings", label: "Settings", icon: Settings },

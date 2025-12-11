@@ -7,14 +7,18 @@ import { DocumentGenerator } from "@/components/sections/DocumentGenerator";
 import { ComplianceEngine } from "@/components/sections/ComplianceEngine";
 import { LoanLifecycle } from "@/components/sections/LoanLifecycle";
 import { ESGIntelligence } from "@/components/sections/ESGIntelligence";
+import { AnalyticsDashboard } from "@/components/sections/AnalyticsDashboard";
+import { APIIntegrations } from "@/components/sections/APIIntegrations";
 
 const sectionConfig: Record<string, { title: string; subtitle: string }> = {
   dashboard: { title: "Dashboard", subtitle: "Overview of your loan portfolio" },
+  analytics: { title: "Analytics", subtitle: "Portfolio performance & risk metrics" },
   documents: { title: "Document Generator", subtitle: "LMA-compliant document automation" },
   trading: { title: "Trading Board", subtitle: "Real-time loan trading marketplace" },
   compliance: { title: "Compliance Engine", subtitle: "Regulatory checks & audit trail" },
   lifecycle: { title: "Loan Lifecycle", subtitle: "Covenant monitoring & payments" },
   esg: { title: "ESG Intelligence", subtitle: "Sustainability scoring & green lending" },
+  integrations: { title: "API Integrations", subtitle: "Connect to banking & enterprise systems" },
   users: { title: "Team Management", subtitle: "Manage team members and permissions" },
   notifications: { title: "Notifications", subtitle: "Alerts and system messages" },
   settings: { title: "Settings", subtitle: "Platform configuration" },
@@ -27,6 +31,8 @@ const Index = () => {
     switch (activeSection) {
       case "dashboard":
         return <Dashboard />;
+      case "analytics":
+        return <AnalyticsDashboard />;
       case "trading":
         return <TradingBoard />;
       case "documents":
@@ -37,6 +43,8 @@ const Index = () => {
         return <LoanLifecycle />;
       case "esg":
         return <ESGIntelligence />;
+      case "integrations":
+        return <APIIntegrations />;
       default:
         return (
           <div className="flex items-center justify-center h-96">
