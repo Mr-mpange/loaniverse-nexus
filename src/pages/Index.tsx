@@ -9,6 +9,8 @@ import { LoanLifecycle } from "@/components/sections/LoanLifecycle";
 import { ESGIntelligence } from "@/components/sections/ESGIntelligence";
 import { AnalyticsDashboard } from "@/components/sections/AnalyticsDashboard";
 import { APIIntegrations } from "@/components/sections/APIIntegrations";
+import { ReportBuilder } from "@/components/sections/ReportBuilder";
+import { AuditLog } from "@/components/sections/AuditLog";
 
 const sectionConfig: Record<string, { title: string; subtitle: string }> = {
   dashboard: { title: "Dashboard", subtitle: "Overview of your loan portfolio" },
@@ -18,7 +20,9 @@ const sectionConfig: Record<string, { title: string; subtitle: string }> = {
   compliance: { title: "Compliance Engine", subtitle: "Regulatory checks & audit trail" },
   lifecycle: { title: "Loan Lifecycle", subtitle: "Covenant monitoring & payments" },
   esg: { title: "ESG Intelligence", subtitle: "Sustainability scoring & green lending" },
+  reports: { title: "Report Builder", subtitle: "Generate custom analytics reports" },
   integrations: { title: "API Integrations", subtitle: "Connect to banking & enterprise systems" },
+  audit: { title: "Audit Log", subtitle: "Activity history & event tracking" },
   users: { title: "Team Management", subtitle: "Manage team members and permissions" },
   notifications: { title: "Notifications", subtitle: "Alerts and system messages" },
   settings: { title: "Settings", subtitle: "Platform configuration" },
@@ -45,6 +49,10 @@ const Index = () => {
         return <ESGIntelligence />;
       case "integrations":
         return <APIIntegrations />;
+      case "reports":
+        return <ReportBuilder />;
+      case "audit":
+        return <AuditLog />;
       default:
         return (
           <div className="flex items-center justify-center h-96">

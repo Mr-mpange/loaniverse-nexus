@@ -34,10 +34,12 @@ const navItems: NavItem[] = [
   { id: "compliance", label: "Compliance", icon: Shield },
   { id: "lifecycle", label: "Loan Lifecycle", icon: LineChart, badge: "2", badgeType: "warning" },
   { id: "esg", label: "ESG Intelligence", icon: Leaf },
+  { id: "reports", label: "Reports", icon: FileText },
 ];
 
 const bottomNavItems: NavItem[] = [
   { id: "integrations", label: "Integrations", icon: Plug },
+  { id: "audit", label: "Audit Log", icon: Shield },
   { id: "users", label: "Team", icon: Users },
   { id: "notifications", label: "Notifications", icon: Bell, badge: "5", badgeType: "destructive" },
   { id: "settings", label: "Settings", icon: Settings },
