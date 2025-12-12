@@ -11,6 +11,8 @@ import { AnalyticsDashboard } from "@/components/sections/AnalyticsDashboard";
 import { APIIntegrations } from "@/components/sections/APIIntegrations";
 import { ReportBuilder } from "@/components/sections/ReportBuilder";
 import { AuditLog } from "@/components/sections/AuditLog";
+import { TeamManagement } from "@/components/sections/TeamManagement";
+import { NotificationSettings } from "@/components/sections/NotificationSettings";
 
 const sectionConfig: Record<string, { title: string; subtitle: string }> = {
   dashboard: { title: "Dashboard", subtitle: "Overview of your loan portfolio" },
@@ -24,7 +26,7 @@ const sectionConfig: Record<string, { title: string; subtitle: string }> = {
   integrations: { title: "API Integrations", subtitle: "Connect to banking & enterprise systems" },
   audit: { title: "Audit Log", subtitle: "Activity history & event tracking" },
   users: { title: "Team Management", subtitle: "Manage team members and permissions" },
-  notifications: { title: "Notifications", subtitle: "Alerts and system messages" },
+  notifications: { title: "Notifications", subtitle: "Email alerts and notification settings" },
   settings: { title: "Settings", subtitle: "Platform configuration" },
 };
 
@@ -53,6 +55,10 @@ const Index = () => {
         return <ReportBuilder />;
       case "audit":
         return <AuditLog />;
+      case "users":
+        return <TeamManagement />;
+      case "notifications":
+        return <NotificationSettings />;
       default:
         return (
           <div className="flex items-center justify-center h-96">
