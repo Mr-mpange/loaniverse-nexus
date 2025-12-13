@@ -13,6 +13,8 @@ import { ReportBuilder } from "@/components/sections/ReportBuilder";
 import { AuditLog } from "@/components/sections/AuditLog";
 import { TeamManagement } from "@/components/sections/TeamManagement";
 import { NotificationSettings } from "@/components/sections/NotificationSettings";
+import { ProfileSettings } from "@/components/sections/ProfileSettings";
+import { ScheduledReports } from "@/components/sections/ScheduledReports";
 
 const sectionConfig: Record<string, { title: string; subtitle: string }> = {
   dashboard: { title: "Dashboard", subtitle: "Overview of your loan portfolio" },
@@ -23,10 +25,12 @@ const sectionConfig: Record<string, { title: string; subtitle: string }> = {
   lifecycle: { title: "Loan Lifecycle", subtitle: "Covenant monitoring & payments" },
   esg: { title: "ESG Intelligence", subtitle: "Sustainability scoring & green lending" },
   reports: { title: "Report Builder", subtitle: "Generate custom analytics reports" },
+  "scheduled-reports": { title: "Scheduled Reports", subtitle: "Automated report delivery" },
   integrations: { title: "API Integrations", subtitle: "Connect to banking & enterprise systems" },
   audit: { title: "Audit Log", subtitle: "Activity history & event tracking" },
   users: { title: "Team Management", subtitle: "Manage team members and permissions" },
   notifications: { title: "Notifications", subtitle: "Email alerts and notification settings" },
+  profile: { title: "Profile Settings", subtitle: "Manage your personal information" },
   settings: { title: "Settings", subtitle: "Platform configuration" },
 };
 
@@ -53,12 +57,16 @@ const Index = () => {
         return <APIIntegrations />;
       case "reports":
         return <ReportBuilder />;
+      case "scheduled-reports":
+        return <ScheduledReports />;
       case "audit":
         return <AuditLog />;
       case "users":
         return <TeamManagement />;
       case "notifications":
         return <NotificationSettings />;
+      case "profile":
+        return <ProfileSettings />;
       default:
         return (
           <div className="flex items-center justify-center h-96">
