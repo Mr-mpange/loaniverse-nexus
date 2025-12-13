@@ -16,6 +16,8 @@ import {
   Bell,
   BarChart3,
   Plug,
+  Calendar,
+  User,
 } from "lucide-react";
 
 interface NavItem {
@@ -35,6 +37,7 @@ const navItems: NavItem[] = [
   { id: "lifecycle", label: "Loan Lifecycle", icon: LineChart, badge: "2", badgeType: "warning" },
   { id: "esg", label: "ESG Intelligence", icon: Leaf },
   { id: "reports", label: "Reports", icon: FileText },
+  { id: "scheduled-reports", label: "Scheduled Reports", icon: Calendar },
 ];
 
 const bottomNavItems: NavItem[] = [
@@ -42,6 +45,7 @@ const bottomNavItems: NavItem[] = [
   { id: "audit", label: "Audit Log", icon: Shield },
   { id: "users", label: "Team", icon: Users },
   { id: "notifications", label: "Notifications", icon: Bell, badge: "5", badgeType: "destructive" },
+  { id: "profile", label: "Profile", icon: User },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
