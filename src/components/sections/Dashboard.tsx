@@ -3,8 +3,6 @@ import {
   FileText,
   ArrowRightLeft,
   AlertTriangle,
-  TrendingUp,
-  Users,
 } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { TradingWidget } from "@/components/dashboard/TradingWidget";
@@ -13,6 +11,7 @@ import { ESGWidget } from "@/components/dashboard/ESGWidget";
 import { RecentDocuments } from "@/components/dashboard/RecentDocuments";
 import { LoansOverview } from "@/components/dashboard/LoansOverview";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { ScheduledReportsWidget } from "@/components/dashboard/ScheduledReportsWidget";
 
 export function Dashboard() {
   return (
@@ -69,7 +68,7 @@ export function Dashboard() {
       </div>
 
       {/* Secondary Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Trading Widget */}
         <div>
           <TradingWidget />
@@ -83,6 +82,11 @@ export function Dashboard() {
         {/* Activity Feed */}
         <div>
           <ActivityFeed />
+        </div>
+
+        {/* Scheduled Reports Widget */}
+        <div>
+          <ScheduledReportsWidget />
         </div>
       </div>
 
