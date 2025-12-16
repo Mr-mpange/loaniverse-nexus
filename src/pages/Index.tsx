@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { CommandPalette } from "@/components/layout/CommandPalette";
 import { Dashboard } from "@/components/sections/Dashboard";
 import { TradingBoard } from "@/components/sections/TradingBoard";
 import { DocumentGenerator } from "@/components/sections/DocumentGenerator";
@@ -29,6 +30,7 @@ const sectionConfig: Record<string, { title: string; subtitle: string }> = {
   integrations: { title: "API Integrations", subtitle: "Connect to banking & enterprise systems" },
   audit: { title: "Audit Log", subtitle: "Activity history & event tracking" },
   users: { title: "Team Management", subtitle: "Manage team members and permissions" },
+  team: { title: "Team Management", subtitle: "Manage team members and permissions" },
   notifications: { title: "Notifications", subtitle: "Email alerts and notification settings" },
   profile: { title: "Profile Settings", subtitle: "Manage your personal information" },
   settings: { title: "Settings", subtitle: "Platform configuration" },
@@ -62,6 +64,7 @@ const Index = () => {
       case "audit":
         return <AuditLog />;
       case "users":
+      case "team":
         return <TeamManagement />;
       case "notifications":
         return <NotificationSettings />;
@@ -97,6 +100,8 @@ const Index = () => {
           {renderSection()}
         </main>
       </div>
+
+      <CommandPalette onNavigate={setActiveSection} />
     </div>
   );
 };

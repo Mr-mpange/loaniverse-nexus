@@ -1,8 +1,8 @@
-import { Search, Bell, HelpCircle } from "lucide-react";
+import { Search, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 interface HeaderProps {
   title: string;
@@ -20,27 +20,30 @@ export function Header({ title, subtitle }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search loans, documents..."
-            className="w-72 pl-9 bg-muted/50 border-border/50 focus:bg-muted"
-          />
-          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground bg-background px-1.5 py-0.5 rounded border border-border">
-            ⌘K
+        {/* Search - Command Palette Trigger */}
+        <Button
+          variant="outline"
+          className="w-72 justify-start text-muted-foreground bg-muted/50 border-border/50 hover:bg-muted"
+          onClick={() => {
+            const event = new KeyboardEvent("keydown", {
+              key: "k",
+              metaKey: true,
+              ctrlKey: true,
+            });
+            document.dispatchEvent(event);
+          }}
+        >
+          <Search className="mr-2 h-4 w-4" />
+          <span className="flex-1 text-left">Search loans, documents...</span>
+          <kbd className="pointer-events-none ml-2 inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-medium">
+            <span className="text-xs">⌘</span>K
           </kbd>
-        </div>
+        </Button>
 
         {/* Actions */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-              3
-            </span>
-          </Button>
+          <NotificationDropdown />
           <Button variant="ghost" size="icon">
             <HelpCircle className="h-5 w-5" />
           </Button>
