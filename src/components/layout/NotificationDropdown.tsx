@@ -8,7 +8,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -16,52 +17,9 @@ interface Notification {
   type: "info" | "warning" | "success" | "error";
   title: string;
   message: string;
-  timestamp: Date;
+  created_at: string;
   read: boolean;
 }
-
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "warning",
-    title: "Compliance Alert",
-    message: "Covenant breach detected for Acme Corp facility",
-    timestamp: new Date(Date.now() - 1000 * 60 * 5),
-    read: false,
-  },
-  {
-    id: "2",
-    type: "success",
-    title: "Trade Executed",
-    message: "Buy order for TechFlow Inc completed at 98.5",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30),
-    read: false,
-  },
-  {
-    id: "3",
-    type: "info",
-    title: "Document Ready",
-    message: "Credit agreement for Global Industries is ready for review",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    read: false,
-  },
-  {
-    id: "4",
-    type: "error",
-    title: "Integration Error",
-    message: "Finastra sync failed - connection timeout",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
-    read: true,
-  },
-  {
-    id: "5",
-    type: "info",
-    title: "Report Generated",
-    message: "Weekly portfolio summary has been sent to recipients",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    read: true,
-  },
-];
 
 const iconMap = {
   info: Info,
@@ -78,22 +36,103 @@ const colorMap = {
 };
 
 export function NotificationDropdown() {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAsRead = (id: string) => {
+  // Fetch initial notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchNotifications = async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (!error && data) {
+        setNotifications(data as Notification[]);
+      }
+    };
+
+    fetchNotifications();
+  }, [user]);
+
+  // Subscribe to real-time notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("notifications-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log("New notification:", payload);
+          setNotifications((prev) => [payload.new as Notification, ...prev]);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          setNotifications((prev) =>
+            prev.map((n) => (n.id === payload.new.id ? (payload.new as Notification) : n))
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          setNotifications((prev) => prev.filter((n) => n.id !== payload.old.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const markAsRead = async (id: string) => {
+    await supabase.from("notifications").update({ read: true }).eq("id", id);
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    if (!user) return;
+    await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", user.id)
+      .eq("read", false);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const deleteNotification = (id: string) => {
+  const deleteNotification = async (id: string) => {
+    await supabase.from("notifications").delete().eq("id", id);
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
@@ -104,7 +143,7 @@ export function NotificationDropdown() {
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-              {unreadCount}
+              {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>
@@ -141,7 +180,7 @@ export function NotificationDropdown() {
                 return (
                   <div
                     key={notification.id}
-                    className={`px-4 py-3 hover:bg-muted/50 cursor-pointer transition-colors ${
+                    className={`px-4 py-3 hover:bg-muted/50 cursor-pointer transition-colors group ${
                       !notification.read ? "bg-muted/30" : ""
                     }`}
                     onClick={() => markAsRead(notification.id)}
@@ -158,7 +197,7 @@ export function NotificationDropdown() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                            className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteNotification(notification.id);
@@ -171,7 +210,7 @@ export function NotificationDropdown() {
                           {notification.message}
                         </p>
                         <p className="text-[10px] text-muted-foreground mt-1">
-                          {formatDistanceToNow(notification.timestamp, {
+                          {formatDistanceToNow(new Date(notification.created_at), {
                             addSuffix: true,
                           })}
                         </p>
