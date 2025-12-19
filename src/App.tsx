@@ -26,7 +26,6 @@ import IntegrationsPage from "./pages/IntegrationsPage";
 import AuditLogPage from "./pages/AuditLogPage";
 import TeamManagementPage from "./pages/TeamManagementPage";
 import SettingsPage from "./pages/SettingsPage";
-import RoleSelection from "./pages/RoleSelection";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,15 +41,7 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<Auth />} />
               
-              {/* Role selection for users without assigned roles */}
-              <Route
-                path="/select-role"
-                element={
-                  <ProtectedRoute>
-                    <RoleSelection />
-                  </ProtectedRoute>
-                }
-              />
+
               
               {/* Dashboard redirect - automatically routes to role-specific dashboard */}
               <Route

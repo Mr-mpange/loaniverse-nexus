@@ -6,6 +6,27 @@ ALTER TABLE notification_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE scheduled_reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist to avoid conflicts
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can view own role" ON user_roles;
+DROP POLICY IF EXISTS "Users can insert own role" ON user_roles;
+DROP POLICY IF EXISTS "Admins can view all roles" ON user_roles;
+DROP POLICY IF EXISTS "Admins can update all roles" ON user_roles;
+DROP POLICY IF EXISTS "Users can view own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can insert own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can view own notification settings" ON notification_settings;
+DROP POLICY IF EXISTS "Users can insert own notification settings" ON notification_settings;
+DROP POLICY IF EXISTS "Users can update own notification settings" ON notification_settings;
+DROP POLICY IF EXISTS "Users can view own scheduled reports" ON scheduled_reports;
+DROP POLICY IF EXISTS "Users can insert own scheduled reports" ON scheduled_reports;
+DROP POLICY IF EXISTS "Users can update own scheduled reports" ON scheduled_reports;
+DROP POLICY IF EXISTS "Users can delete own scheduled reports" ON scheduled_reports;
+DROP POLICY IF EXISTS "Compliance officers and admins can view audit logs" ON audit_logs;
+DROP POLICY IF EXISTS "System can insert audit logs" ON audit_logs;
+
 -- Profiles policies
 CREATE POLICY "Users can view own profile" ON profiles
   FOR SELECT USING (auth.uid() = id);
@@ -87,30 +108,6 @@ CREATE POLICY "Compliance officers and admins can view audit logs" ON audit_logs
 CREATE POLICY "System can insert audit logs" ON audit_logs
   FOR INSERT WITH CHECK (true);
 
--- Create a function to check user roles
-CREATE OR REPLACE FUNCTION auth.user_has_role(required_role text)
-RETURNS boolean AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM user_roles 
-    WHERE user_id = auth.uid() 
-    AND role = required_role::app_role
-  );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Create a trigger to automatically create a profile when a user signs up
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger AS $$
-BEGIN
-  INSERT INTO public.profiles (id, full_name)
-  VALUES (new.id, new.raw_user_meta_data->>'full_name');
-  RETURN new;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Create the trigger
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+-- Note: Custom functions and triggers are optional
+-- The policies above should be sufficient for basic functionality
+-- If you need the auto-profile creation, you can set it up through the Supabase dashboard

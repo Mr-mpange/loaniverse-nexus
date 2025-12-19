@@ -35,19 +35,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
       
       if (error) {
+        console.error('Supabase error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          fullError: error
+        });
+        console.error('Full error object:', JSON.stringify(error, null, 2));
+        
         if (error.code === 'PGRST116') {
           // No rows returned - user has no role assigned
-          console.log('No role found for user');
+          console.log('No role found for user - table exists but no data');
           return null;
         }
-        console.error('Error fetching user role:', error);
+        
+        if (error.code === '42P01') {
+          console.error('❌ user_roles table does not exist!');
+          return null;
+        }
+        
+        console.error('❌ Other database error:', error);
         return null;
       }
       
-      console.log('User role fetch result:', data);
+      console.log('✅ User role fetch successful:', data);
       return data?.role as UserRole || null;
     } catch (error) {
-      console.error('Error fetching user role:', error);
+      console.error('❌ Network or other error fetching user role:', error);
       return null;
     }
   };

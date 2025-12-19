@@ -38,12 +38,12 @@ export const DashboardRedirect = () => {
       return <Navigate to="/compliance" replace />;
     case null:
     case undefined:
-      console.log('No role found, redirecting to role selection. UserRole was:', userRole);
-      // Redirect to role selection if no role is assigned
-      return <Navigate to="/select-role" replace />;
+      console.log('No role found, defaulting to analytics dashboard. UserRole was:', userRole);
+      // Default to analytics dashboard if no role is assigned
+      return <Navigate to="/analytics" replace />;
     default:
-      console.log('Unknown role, redirecting to role selection. UserRole was:', userRole);
-      // Redirect to role selection for unknown roles
-      return <Navigate to="/select-role" replace />;
+      console.log('Unknown role, defaulting to analytics dashboard. UserRole was:', userRole);
+      // Default to analytics dashboard for unknown roles
+      return <Navigate to="/analytics" replace />;
   }
 };
