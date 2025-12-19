@@ -87,6 +87,33 @@ The application implements role-based routing with dedicated dashboards for each
 - **Dynamic Navigation**: Sidebar adapts to show relevant modules based on user role
 - **Admin Role Switching**: Admins can view the application from any role's perspective
 - **Protected Routes**: Unauthorized access attempts are blocked with appropriate messaging
+- **Role Selection**: New users can select their role on first login
+
+## Database Setup
+
+The application requires a Supabase database with proper Row Level Security (RLS) policies. 
+
+### Quick Setup
+
+1. Go to your Supabase project dashboard
+2. Navigate to the SQL Editor
+3. Run the SQL script in `supabase-setup.sql` to create the necessary policies and triggers
+
+### Manual Setup
+
+If you prefer to set up manually:
+
+1. **Enable RLS** on all tables (profiles, user_roles, notifications, etc.)
+2. **Create policies** for each table to allow users to access their own data
+3. **Set up admin policies** to allow admins to manage user roles
+4. **Create triggers** to automatically create profiles for new users
+
+### Troubleshooting
+
+If users are getting 403 errors when selecting roles:
+- Ensure RLS policies are properly configured
+- Check that the `user_roles` table allows INSERT for authenticated users
+- Verify that the `app_role` enum includes all role types
 
 ## How can I deploy this project?
 

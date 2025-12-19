@@ -4,7 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 export const DashboardRedirect = () => {
-  const { userRole, isLoading } = useAuth();
+  const { userRole, isLoading, user } = useAuth();
+
+  // Add debugging
+  console.log('DashboardRedirect - userRole:', userRole, 'isLoading:', isLoading, 'user:', user?.email);
 
   if (isLoading) {
     return (
@@ -17,18 +20,30 @@ export const DashboardRedirect = () => {
     );
   }
 
+
+
   // Redirect to role-specific dashboard
   switch (userRole) {
     case 'admin':
+      console.log('Redirecting to admin dashboard');
       return <Navigate to="/admin" replace />;
     case 'loan_officer':
+      console.log('Redirecting to loan officer dashboard');
       return <Navigate to="/loan-officer" replace />;
     case 'trader':
+      console.log('Redirecting to trader dashboard');
       return <Navigate to="/trader" replace />;
     case 'compliance_officer':
+      console.log('Redirecting to compliance dashboard');
       return <Navigate to="/compliance" replace />;
+    case null:
+    case undefined:
+      console.log('No role found, redirecting to role selection. UserRole was:', userRole);
+      // Redirect to role selection if no role is assigned
+      return <Navigate to="/select-role" replace />;
     default:
-      // Default to loan officer dashboard if role is not recognized
-      return <Navigate to="/loan-officer" replace />;
+      console.log('Unknown role, redirecting to role selection. UserRole was:', userRole);
+      // Redirect to role selection for unknown roles
+      return <Navigate to="/select-role" replace />;
   }
 };

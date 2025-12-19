@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CommandDialog,
   CommandEmpty,
@@ -74,6 +75,27 @@ const navigationItems = [
 export function CommandPalette({ onNavigate }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+
+  // Route mapping for navigation items
+  const routeMap: Record<string, string> = {
+    dashboard: "/",
+    analytics: "/analytics",
+    documents: "/documents",
+    trading: "/trading",
+    compliance: "/compliance-engine",
+    lifecycle: "/loan-lifecycle",
+    esg: "/esg",
+    reports: "/reports",
+    "scheduled-reports": "/scheduled-reports",
+    integrations: "/integrations",
+    audit: "/audit-log",
+    users: "/team",
+    team: "/team",
+    notifications: "/notifications",
+    profile: "/profile",
+    settings: "/settings",
+  };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -123,6 +145,11 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
   }, [search]);
 
   const handleSelect = (section: string) => {
+    const route = routeMap[section];
+    if (route) {
+      navigate(route);
+    }
+    // Also call onNavigate for backward compatibility
     onNavigate(section);
     setOpen(false);
     setSearch("");

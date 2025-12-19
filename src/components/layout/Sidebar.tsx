@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,6 +29,26 @@ interface NavItem {
   badge?: string;
   badgeType?: "default" | "success" | "warning" | "destructive";
 }
+
+// Route mapping for navigation items
+const routeMap: Record<string, string> = {
+  dashboard: "/",
+  analytics: "/analytics",
+  documents: "/documents",
+  trading: "/trading",
+  compliance: "/compliance-engine",
+  lifecycle: "/loan-lifecycle",
+  esg: "/esg",
+  reports: "/reports",
+  "scheduled-reports": "/scheduled-reports",
+  integrations: "/integrations",
+  audit: "/audit-log",
+  users: "/team",
+  team: "/team",
+  notifications: "/notifications",
+  profile: "/profile",
+  settings: "/settings",
+};
 
 // Role-based navigation items
 const getNavItemsForRole = (userRole: string | null): NavItem[] => {
@@ -115,13 +136,25 @@ interface SidebarProps {
 export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { userRole } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
   const navItems = getNavItemsForRole(userRole);
   const bottomNavItems = getBottomNavItemsForRole(userRole);
 
+  const handleNavigation = (itemId: string) => {
+    const route = routeMap[itemId];
+    if (route) {
+      navigate(route);
+    }
+    // Also call the onSectionChange for backward compatibility
+    onSectionChange(itemId);
+  };
+
   const renderNavItem = (item: NavItem) => {
     const Icon = item.icon;
-    const isActive = activeSection === item.id;
+    const route = routeMap[item.id];
+    const isActive = location.pathname === route || activeSection === item.id;
 
     return (
       <Button
@@ -131,7 +164,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
           "w-full relative group",
           collapsed ? "justify-center px-2" : "px-3"
         )}
-        onClick={() => onSectionChange(item.id)}
+        onClick={() => handleNavigation(item.id)}
       >
         <Icon className={cn("h-5 w-5 shrink-0", isActive && "text-primary")} />
         {!collapsed && (

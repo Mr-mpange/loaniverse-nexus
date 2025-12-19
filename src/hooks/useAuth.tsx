@@ -14,6 +14,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
+  refreshUserRole: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,19 +25,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchUserRole = async (userId: string, token: string): Promise<UserRole | null> => {
+  const fetchUserRole = async (userId: string): Promise<UserRole | null> => {
     try {
-      const result = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${userId}&select=role`,
-        {
-          headers: {
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${token}`,
-          },
+      console.log('Fetching user role for userId:', userId);
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows returned - user has no role assigned
+          console.log('No role found for user');
+          return null;
         }
-      );
-      const rows = await result.json();
-      return rows[0]?.role || null;
+        console.error('Error fetching user role:', error);
+        return null;
+      }
+      
+      console.log('User role fetch result:', data);
+      return data?.role as UserRole || null;
     } catch (error) {
       console.error('Error fetching user role:', error);
       return null;
@@ -45,32 +54,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user && session.access_token) {
-          setTimeout(() => {
-            fetchUserRole(session.user.id, session.access_token).then(setUserRole);
-          }, 0);
+        if (session?.user) {
+          try {
+            const role = await fetchUserRole(session.user.id);
+            console.log('Setting user role:', role);
+            setUserRole(role);
+          } catch (error) {
+            console.error('Failed to fetch user role:', error);
+            setUserRole(null);
+          }
         } else {
           setUserRole(null);
         }
+        setIsLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
-      if (session?.user && session.access_token) {
-        fetchUserRole(session.user.id, session.access_token).then((role) => {
+      if (session?.user) {
+        try {
+          const role = await fetchUserRole(session.user.id);
+          console.log('Initial role fetch:', role);
           setUserRole(role);
-          setIsLoading(false);
-        });
-      } else {
-        setIsLoading(false);
+        } catch (error) {
+          console.error('Failed to fetch initial user role:', error);
+          setUserRole(null);
+        }
       }
+      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -93,18 +113,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (error) return { error: new Error(error.message) };
 
-    if (data.user && data.session) {
-      const token = data.session.access_token;
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${token}`, Prefer: 'return=minimal' },
-        body: JSON.stringify({ id: data.user.id, full_name: fullName }),
-      });
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/user_roles`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${token}`, Prefer: 'return=minimal' },
-        body: JSON.stringify({ user_id: data.user.id, role }),
-      });
+    if (data.user) {
+      try {
+        // Create profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({ id: data.user.id, full_name: fullName });
+        
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+        
+        // Create user role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: data.user.id, role });
+        
+        if (roleError) {
+          console.error('Role creation error:', roleError);
+        } else {
+          console.log('Role created successfully:', role);
+        }
+      } catch (error) {
+        console.error('Error creating user profile/role:', error);
+      }
     }
     return { error: null };
   };
@@ -118,9 +150,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const hasRole = (role: UserRole) => userRole === role;
   const hasAnyRole = (roles: UserRole[]) => userRole !== null && roles.includes(userRole);
+  
+  const refreshUserRole = async () => {
+    if (user) {
+      const role = await fetchUserRole(user.id);
+      setUserRole(role);
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, session, userRole, isLoading, signIn, signUp, signOut, hasRole, hasAnyRole }}>
+    <AuthContext.Provider value={{ user, session, userRole, isLoading, signIn, signUp, signOut, hasRole, hasAnyRole, refreshUserRole }}>
       {children}
     </AuthContext.Provider>
   );
