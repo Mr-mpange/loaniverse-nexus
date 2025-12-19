@@ -27,7 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserRole = async (userId: string): Promise<UserRole | null> => {
     try {
-      console.log('Fetching user role for userId:', userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -35,34 +34,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
       
       if (error) {
-        console.error('Supabase error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          fullError: error
-        });
-        console.error('Full error object:', JSON.stringify(error, null, 2));
-        
         if (error.code === 'PGRST116') {
           // No rows returned - user has no role assigned
-          console.log('No role found for user - table exists but no data');
           return null;
         }
-        
-        if (error.code === '42P01') {
-          console.error('❌ user_roles table does not exist!');
-          return null;
-        }
-        
-        console.error('❌ Other database error:', error);
+        console.error('Error fetching user role:', error);
         return null;
       }
       
-      console.log('✅ User role fetch successful:', data);
       return data?.role as UserRole || null;
     } catch (error) {
-      console.error('❌ Network or other error fetching user role:', error);
+      console.error('Error fetching user role:', error);
       return null;
     }
   };
@@ -70,14 +52,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           try {
             const role = await fetchUserRole(session.user.id);
-            console.log('Setting user role:', role);
             setUserRole(role);
           } catch (error) {
             console.error('Failed to fetch user role:', error);
@@ -91,14 +71,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         try {
           const role = await fetchUserRole(session.user.id);
-          console.log('Initial role fetch:', role);
           setUserRole(role);
         } catch (error) {
           console.error('Failed to fetch initial user role:', error);

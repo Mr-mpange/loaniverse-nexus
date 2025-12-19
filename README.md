@@ -91,29 +91,29 @@ The application implements role-based routing with dedicated dashboards for each
 
 ## Database Setup
 
-The application requires a Supabase database with proper Row Level Security (RLS) policies. 
+The application uses Supabase for authentication and database management.
 
-### Quick Setup
+### Setup Instructions
 
-1. Go to your Supabase project dashboard
-2. Navigate to the SQL Editor
-3. Run the SQL script in `supabase-setup.sql` to create the necessary policies and triggers
+1. **Create a Supabase project** at https://supabase.com
+2. **Configure environment variables** in `.env`:
+   ```
+   VITE_SUPABASE_PROJECT_ID="your-project-id"
+   VITE_SUPABASE_PUBLISHABLE_KEY="your-anon-public-key"
+   VITE_SUPABASE_URL="https://your-project-id.supabase.co"
+   ```
+3. **Run the migration** in your Supabase SQL Editor:
+   - Copy the contents of `supabase/migrations/20241219000000_setup_user_roles.sql`
+   - Paste and run in your Supabase project's SQL Editor
+4. **Configure CORS** in Supabase Dashboard:
+   - Go to Settings → API
+   - Add `http://localhost:8082` to CORS origins
 
-### Manual Setup
+### User Management
 
-If you prefer to set up manually:
-
-1. **Enable RLS** on all tables (profiles, user_roles, notifications, etc.)
-2. **Create policies** for each table to allow users to access their own data
-3. **Set up admin policies** to allow admins to manage user roles
-4. **Create triggers** to automatically create profiles for new users
-
-### Troubleshooting
-
-If users are getting 403 errors when selecting roles:
-- Ensure RLS policies are properly configured
-- Check that the `user_roles` table allows INSERT for authenticated users
-- Verify that the `app_role` enum includes all role types
+- **First user** created through signup will need a role assigned manually
+- **Subsequent users** can be assigned roles through the admin interface
+- **Roles available**: Admin, Loan Officer, Trader, Compliance Officer
 
 ## How can I deploy this project?
 
