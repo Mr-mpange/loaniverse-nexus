@@ -59,6 +59,34 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- React Router DOM
+- Supabase (Authentication & Database)
+- Tanstack Query
+
+## Application Structure
+
+### Role-Based Routing
+
+The application implements role-based routing with dedicated dashboards for each user role:
+
+- **Admin Dashboard** (`/admin`) - Full system access with all modules
+- **Loan Officer Dashboard** (`/loan-officer`) - Loan management and documentation
+- **Trader Dashboard** (`/trader`) - Trading board and market analytics
+- **Compliance Dashboard** (`/compliance`) - Regulatory oversight and audit tools
+
+### Authentication & Authorization
+
+- Users are automatically redirected to their role-specific dashboard upon login
+- Route protection ensures users can only access authorized sections
+- Admins have access to all dashboards and can switch between role views
+- Role-based sidebar navigation shows relevant modules for each user type
+
+### Key Features
+
+- **Role-based Access Control**: Each role has specific permissions and dashboard views
+- **Dynamic Navigation**: Sidebar adapts to show relevant modules based on user role
+- **Admin Role Switching**: Admins can view the application from any role's perspective
+- **Protected Routes**: Unauthorized access attempts are blocked with appropriate messaging
 
 ## How can I deploy this project?
 

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { UserMenu } from "./UserMenu";
 import { ThemeToggle } from "./ThemeToggle";
 import { NotificationDropdown } from "./NotificationDropdown";
+import { RoleSwitcher } from "./RoleSwitcher";
 
 interface HeaderProps {
   title: string;
@@ -20,6 +21,9 @@ export function Header({ title, subtitle }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-4">
+        {/* Role Switcher for Admins */}
+        <RoleSwitcher />
+        
         {/* Search - Command Palette Trigger */}
         <Button
           variant="outline"
