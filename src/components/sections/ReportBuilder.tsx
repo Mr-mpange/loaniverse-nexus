@@ -93,6 +93,24 @@ const reportTemplates: ReportTemplate[] = [
   },
 ];
 
+interface CustomComponent {
+  id: string;
+  name: string;
+  type: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const availableComponents: CustomComponent[] = [
+  { id: "portfolio-metrics", name: "Portfolio Metrics", type: "Metrics", icon: TrendingUp },
+  { id: "performance-chart", name: "Performance Chart", type: "Chart", icon: BarChart3 },
+  { id: "allocation-pie", name: "Asset Allocation", type: "Pie Chart", icon: PieChart },
+  { id: "holdings-table", name: "Holdings Table", type: "Table", icon: FileText },
+  { id: "risk-metrics", name: "Risk Metrics", type: "Metrics", icon: Shield },
+  { id: "esg-scores", name: "ESG Scores", type: "Metrics", icon: Leaf },
+  { id: "compliance-status", name: "Compliance Status", type: "Table", icon: Shield },
+  { id: "sector-exposure", name: "Sector Exposure", type: "Chart", icon: BarChart3 },
+];
+
 export function ReportBuilder() {
   const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate | null>(null);
   const [reportName, setReportName] = useState("");
@@ -100,6 +118,19 @@ export function ReportBuilder() {
   const [sections, setSections] = useState<ReportSection[]>([]);
   const [generating, setGenerating] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  
+  // Custom report builder state
+  const [customReportStarted, setCustomReportStarted] = useState(false);
+  const [customComponents, setCustomComponents] = useState<CustomComponent[]>([]);
+  const [customReportName, setCustomReportName] = useState("My Custom Report");
+  const [customDateRange, setCustomDateRange] = useState("last-30-days");
+  
+  // Scheduled reports state
+  const [scheduledReports, setScheduledReports] = useState([
+    { id: 1, name: "Weekly Portfolio Summary", schedule: "Every Monday 9:00 AM", status: "active" },
+    { id: 2, name: "Monthly Compliance Report", schedule: "1st of month 8:00 AM", status: "active" },
+    { id: 3, name: "Quarterly ESG Report", schedule: "End of quarter", status: "paused" },
+  ]);
 
   const handleTemplateSelect = (template: ReportTemplate) => {
     setSelectedTemplate(template);
@@ -225,6 +256,137 @@ Template: ${selectedTemplate?.name}
     content += `═══════════════════════════════════════════════════════════════\n`;
 
     return content;
+  };
+
+  // Custom report builder functions
+  const addCustomComponent = (component: CustomComponent) => {
+    setCustomComponents((prev) => [...prev, component]);
+    toast.success(`Added ${component.name} to report`);
+  };
+
+  const removeCustomComponent = (index: number) => {
+    setCustomComponents((prev) => prev.filter((_, i) => i !== index));
+    toast.success("Component removed from report");
+  };
+
+  const handleCustomExport = async (format: "pdf" | "excel") => {
+    if (customComponents.length === 0) {
+      toast.error("Please add at least one component to your report");
+      return;
+    }
+
+    setGenerating(true);
+    
+    // Log the export event
+    await logAuditEvent({
+      action: "export",
+      entity_type: "custom_report",
+      entity_id: "custom",
+      details: {
+        format,
+        reportName: customReportName,
+        dateRange: customDateRange,
+        components: customComponents.map((c) => c.name),
+      },
+    });
+
+    // Simulate report generation
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    if (format === "excel") {
+      const csvContent = generateCustomExcelData();
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${customReportName.replace(/\s+/g, "_")}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      const pdfContent = generateCustomPdfContent();
+      const blob = new Blob([pdfContent], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${customReportName.replace(/\s+/g, "_")}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    setGenerating(false);
+    toast.success(`Custom report exported as ${format.toUpperCase()}`);
+  };
+
+  const generateCustomExcelData = () => {
+    let csv = `Report: ${customReportName}\nDate Range: ${customDateRange}\nGenerated: ${new Date().toLocaleString()}\n\n`;
+
+    customComponents.forEach((component) => {
+      csv += `\n--- ${component.name} ---\n`;
+      if (component.type === "Metrics") {
+        csv += "Metric,Value,Change\n";
+        csv += "Portfolio Value,$4.68B,+12.4%\n";
+        csv += "Risk Score,56/100,Moderate\n";
+        csv += "ESG Score,78/100,+8 pts\n";
+      } else if (component.type === "Table") {
+        csv += "Item,Status,Value\n";
+        csv += "Term Loans,Active,$2.1B\n";
+        csv += "Revolving Credit,Active,$1.2B\n";
+        csv += "Bridge Loans,Active,$0.7B\n";
+      } else if (component.type === "Chart" || component.type === "Pie Chart") {
+        csv += "Category,Value\n";
+        csv += "Equities,45%\n";
+        csv += "Fixed Income,35%\n";
+        csv += "Alternatives,20%\n";
+      }
+    });
+
+    return csv;
+  };
+
+  const generateCustomPdfContent = () => {
+    let content = `
+═══════════════════════════════════════════════════════════════
+                    ${customReportName.toUpperCase()}
+═══════════════════════════════════════════════════════════════
+
+Date Range: ${customDateRange}
+Generated: ${new Date().toLocaleString()}
+Type: Custom Report
+
+`;
+
+    customComponents.forEach((component) => {
+      content += `\n▸ ${component.name}\n${"─".repeat(50)}\n`;
+      if (component.type === "Metrics") {
+        content += `  • Portfolio Value: $4.68B (+12.4% YTD)\n`;
+        content += `  • Risk Score: 56/100 (Moderate)\n`;
+        content += `  • ESG Score: 78/100 (+8 pts QoQ)\n`;
+        content += `  • Compliance Rate: 98.5%\n`;
+      } else if (component.type === "Table") {
+        content += `  ┌─────────────────────┬──────────┬─────────────┐\n`;
+        content += `  │ Category            │ Status   │ Value       │\n`;
+        content += `  ├─────────────────────┼──────────┼─────────────┤\n`;
+        content += `  │ Term Loans          │ Active   │ $2.1B       │\n`;
+        content += `  │ Revolving Credit    │ Active   │ $1.2B       │\n`;
+        content += `  │ Bridge Loans        │ Active   │ $0.7B       │\n`;
+        content += `  └─────────────────────┴──────────┴─────────────┘\n`;
+      } else if (component.type === "Chart" || component.type === "Pie Chart") {
+        content += `  [${component.type} visualization would appear here]\n`;
+        content += `  Data: Equities 45%, Fixed Income 35%, Alternatives 20%\n`;
+      }
+    });
+
+    content += `\n═══════════════════════════════════════════════════════════════\n`;
+    content += `                    END OF REPORT\n`;
+    content += `═══════════════════════════════════════════════════════════════\n`;
+
+    return content;
+  };
+
+  // Scheduled reports functions
+  const deleteScheduledReport = (reportId: number) => {
+    setScheduledReports((prev) => prev.filter((report) => report.id !== reportId));
+    toast.success("Scheduled report deleted");
   };
 
   return (
@@ -398,26 +560,180 @@ Template: ${selectedTemplate?.name}
         </TabsContent>
 
         <TabsContent value="custom" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Custom Report Builder</CardTitle>
-              <CardDescription>
-                Build a custom report by selecting data sources and visualizations
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <Plus className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Drag and drop components to build your custom report
-                </p>
-                <Button className="mt-4">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Start Building
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {!customReportStarted ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Custom Report Builder</CardTitle>
+                <CardDescription>
+                  Build a custom report by selecting data sources and visualizations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Plus className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    Drag and drop components to build your custom report
+                  </p>
+                  <Button className="mt-4" onClick={() => setCustomReportStarted(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Start Building
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Component Library */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Components</CardTitle>
+                  <CardDescription>Drag to add to your report</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {availableComponents.map((component) => {
+                    const Icon = component.icon;
+                    return (
+                      <div
+                        key={component.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => addCustomComponent(component)}
+                      >
+                        <Icon className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">{component.name}</p>
+                          <p className="text-xs text-muted-foreground">{component.type}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+
+              {/* Report Canvas */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Report Canvas</CardTitle>
+                      <CardDescription>Build your custom report here</CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setCustomReportStarted(false)}>
+                      ← Back
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 min-h-[400px] border-2 border-dashed border-muted-foreground/20 rounded-lg p-4">
+                    {customComponents.length === 0 ? (
+                      <div className="flex items-center justify-center h-full text-center">
+                        <div>
+                          <Plus className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground">
+                            Add components from the library to start building your report
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      customComponents.map((component, index) => {
+                        const Icon = component.icon;
+                        return (
+                          <div
+                            key={`${component.id}-${index}`}
+                            className="flex items-center justify-between p-4 rounded-lg border bg-card"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Icon className="w-5 h-5 text-primary" />
+                              <div>
+                                <p className="font-medium">{component.name}</p>
+                                <p className="text-sm text-muted-foreground">{component.type}</p>
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeCustomComponent(index)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Settings & Export */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Settings</CardTitle>
+                  <CardDescription>Configure your report</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customReportName">Report Name</Label>
+                    <Input
+                      id="customReportName"
+                      value={customReportName}
+                      onChange={(e) => setCustomReportName(e.target.value)}
+                      placeholder="My Custom Report"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Date Range</Label>
+                    <Select value={customDateRange} onValueChange={setCustomDateRange}>
+                      <SelectTrigger>
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="last-7-days">Last 7 Days</SelectItem>
+                        <SelectItem value="last-30-days">Last 30 Days</SelectItem>
+                        <SelectItem value="last-quarter">Last Quarter</SelectItem>
+                        <SelectItem value="last-year">Last Year</SelectItem>
+                        <SelectItem value="ytd">Year to Date</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="pt-4 border-t space-y-2">
+                    <Button
+                      className="w-full"
+                      onClick={() => handleCustomExport("pdf")}
+                      disabled={customComponents.length === 0 || generating}
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Export PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => handleCustomExport("excel")}
+                      disabled={customComponents.length === 0 || generating}
+                    >
+                      <FileSpreadsheet className="w-4 h-4 mr-2" />
+                      Export Excel
+                    </Button>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <p className="text-sm font-medium mb-2">Report Summary</p>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <div className="flex justify-between">
+                        <span>Components</span>
+                        <span>{customComponents.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Date Range</span>
+                        <span className="capitalize">{customDateRange.replace(/-/g, " ")}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="scheduled" className="space-y-4">
@@ -430,12 +746,8 @@ Template: ${selectedTemplate?.name}
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { name: "Weekly Portfolio Summary", schedule: "Every Monday 9:00 AM", status: "active" },
-                  { name: "Monthly Compliance Report", schedule: "1st of month 8:00 AM", status: "active" },
-                  { name: "Quarterly ESG Report", schedule: "End of quarter", status: "paused" },
-                ].map((report, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 rounded-lg border">
+                {scheduledReports.map((report) => (
+                  <div key={report.id} className="flex items-center justify-between p-4 rounded-lg border">
                     <div>
                       <p className="font-medium">{report.name}</p>
                       <p className="text-sm text-muted-foreground">{report.schedule}</p>
@@ -444,7 +756,11 @@ Template: ${selectedTemplate?.name}
                       <Badge variant={report.status === "active" ? "default" : "secondary"}>
                         {report.status}
                       </Badge>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => deleteScheduledReport(report.id)}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>

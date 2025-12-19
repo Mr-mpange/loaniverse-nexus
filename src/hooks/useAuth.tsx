@@ -124,8 +124,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (roleError) {
           console.error('Role creation error:', roleError);
-        } else {
-          console.log('Role created successfully:', role);
         }
       } catch (error) {
         console.error('Error creating user profile/role:', error);
