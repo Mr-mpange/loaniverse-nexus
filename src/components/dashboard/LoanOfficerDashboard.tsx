@@ -13,40 +13,55 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-
-const pendingLoans = [
-  { id: 1, borrower: "Acme Corp", amount: "$50M", stage: "Documentation", progress: 65 },
-  { id: 2, borrower: "TechFlow Inc", amount: "$25M", stage: "Review", progress: 85 },
-  { id: 3, borrower: "Global Industries", amount: "$100M", stage: "Onboarding", progress: 30 },
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import { useLoans, useLoanStats } from "@/hooks/useLoans";
+import { useDocumentStats } from "@/hooks/useDocuments";
+import { useAuth } from "@/hooks/useAuth";
 
 export function LoanOfficerDashboard() {
+  const { user } = useAuth();
+  const { data: loans = [], isLoading: loansLoading } = useLoans();
+  const { data: loanStats, isLoading: statsLoading } = useLoanStats();
+  const { data: docStats } = useDocumentStats();
+
+  const formatAmount = (amount: number) => {
+    if (amount >= 1000000000) {
+      return `$${(amount / 1000000000).toFixed(1)}B`;
+    }
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`;
+    }
+    return `$${(amount / 1000).toFixed(0)}K`;
+  };
+
+  const loansInProgress = loans.filter(l => l.status === 'pending' || l.status === 'review');
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Loan Officer focused metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="My Active Loans"
-          value="12"
-          change="+2 new"
-          changeType="positive"
+          value={statsLoading ? "..." : String(loanStats?.activeLoans || 0)}
+          change={`${loanStats?.pendingLoans || 0} pending`}
+          changeType="neutral"
           icon={Briefcase}
           iconColor="primary"
           subtitle="assigned to you"
         />
         <MetricCard
           title="Pending Documents"
-          value="8"
-          change="4 urgent"
-          changeType="negative"
+          value={String(docStats?.pending || 0)}
+          change={docStats?.pending && docStats.pending > 0 ? "Action needed" : "All clear"}
+          changeType={docStats?.pending && docStats.pending > 0 ? "negative" : "positive"}
           icon={FileText}
           iconColor="warning"
           subtitle="awaiting review"
         />
         <MetricCard
           title="Loans in Pipeline"
-          value="$175M"
-          change="+$25M"
+          value={statsLoading ? "..." : formatAmount(loanStats?.pipelineValue || 0)}
+          change={`${loanStats?.pendingLoans || 0} loans`}
           changeType="positive"
           icon={DollarSign}
           iconColor="success"
@@ -54,11 +69,11 @@ export function LoanOfficerDashboard() {
         />
         <MetricCard
           title="Covenant Alerts"
-          value="2"
-          change="Action needed"
-          changeType="negative"
+          value="0"
+          change="All clear"
+          changeType="positive"
           icon={AlertTriangle}
-          iconColor="destructive"
+          iconColor="success"
         />
       </div>
 
@@ -74,19 +89,32 @@ export function LoanOfficerDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pendingLoans.map((loan) => (
-              <div key={loan.id} className="p-3 rounded-lg bg-muted/30">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-medium text-sm">{loan.borrower}</p>
-                    <p className="text-xs text-muted-foreground">{loan.amount}</p>
-                  </div>
-                  <Badge variant="outline" className="text-xs">{loan.stage}</Badge>
-                </div>
-                <Progress value={loan.progress} className="h-2" />
-                <p className="text-xs text-muted-foreground mt-1">{loan.progress}% complete</p>
+            {loansLoading ? (
+              <>
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </>
+            ) : loansInProgress.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">No loans in progress</p>
+                <p className="text-xs mt-1">Create a loan to get started</p>
               </div>
-            ))}
+            ) : (
+              loansInProgress.slice(0, 3).map((loan) => (
+                <div key={loan.id} className="p-3 rounded-lg bg-muted/30">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-medium text-sm">{loan.borrower_name}</p>
+                      <p className="text-xs text-muted-foreground">{formatAmount(loan.amount)}</p>
+                    </div>
+                    <Badge variant="outline" className="text-xs capitalize">{loan.stage}</Badge>
+                  </div>
+                  <Progress value={loan.progress} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-1">{loan.progress}% complete</p>
+                </div>
+              ))
+            )}
             <Button variant="outline" className="w-full mt-2">
               View All Loans
             </Button>

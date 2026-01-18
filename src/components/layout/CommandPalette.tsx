@@ -24,36 +24,16 @@ import {
   Bell,
   User,
   Building,
-  DollarSign,
-  Search,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useLoans } from "@/hooks/useLoans";
+import { useDocuments } from "@/hooks/useDocuments";
+import { useTrades } from "@/hooks/useTrades";
 
 interface CommandPaletteProps {
   onNavigate: (section: string) => void;
 }
-
-// Mock data for global search
-const mockLoans = [
-  { id: "L001", borrower: "Acme Corp", amount: "$50M", status: "Active" },
-  { id: "L002", borrower: "TechFlow Inc", amount: "$25M", status: "Pending" },
-  { id: "L003", borrower: "Global Industries", amount: "$100M", status: "Active" },
-  { id: "L004", borrower: "Meridian Holdings", amount: "$75M", status: "Review" },
-  { id: "L005", borrower: "Apex Partners", amount: "$30M", status: "Active" },
-];
-
-const mockDocuments = [
-  { id: "D001", name: "Credit Agreement - Acme Corp", type: "Credit Agreement", date: "2024-01-15" },
-  { id: "D002", name: "Term Sheet - TechFlow Inc", type: "Term Sheet", date: "2024-01-10" },
-  { id: "D003", name: "Facility Agreement - Global", type: "Facility Agreement", date: "2024-01-08" },
-  { id: "D004", name: "Amendment - Meridian", type: "Amendment", date: "2024-01-05" },
-];
-
-const mockTrades = [
-  { id: "T001", borrower: "Acme Corp", side: "BUY", amount: "$5M", price: "99.25" },
-  { id: "T002", borrower: "TechFlow Inc", side: "SELL", amount: "$10M", price: "98.50" },
-  { id: "T003", borrower: "Global Industries", side: "BUY", amount: "$2.5M", price: "97.75" },
-];
 
 const navigationItems = [
   { icon: LayoutDashboard, label: "Dashboard", section: "dashboard" },
@@ -76,6 +56,13 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+
+  // Fetch real data
+  const { data: loans = [], isLoading: loansLoading } = useLoans();
+  const { data: documents = [], isLoading: documentsLoading } = useDocuments();
+  const { data: trades = [], isLoading: tradesLoading } = useTrades();
+
+  const isLoading = loansLoading || documentsLoading || tradesLoading;
 
   // Route mapping for navigation items
   const routeMap: Record<string, string> = {
@@ -112,30 +99,30 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
   // Filter results based on search
   const filteredLoans = useMemo(() => {
     if (!search) return [];
-    return mockLoans.filter(
+    return loans.filter(
       (loan) =>
-        loan.borrower.toLowerCase().includes(search.toLowerCase()) ||
+        loan.borrower_name.toLowerCase().includes(search.toLowerCase()) ||
         loan.id.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
+  }, [search, loans]);
 
   const filteredDocuments = useMemo(() => {
     if (!search) return [];
-    return mockDocuments.filter(
+    return documents.filter(
       (doc) =>
         doc.name.toLowerCase().includes(search.toLowerCase()) ||
         doc.type.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
+  }, [search, documents]);
 
   const filteredTrades = useMemo(() => {
     if (!search) return [];
-    return mockTrades.filter(
+    return trades.filter(
       (trade) =>
-        trade.borrower.toLowerCase().includes(search.toLowerCase()) ||
+        trade.borrower_name.toLowerCase().includes(search.toLowerCase()) ||
         trade.id.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
+  }, [search, trades]);
 
   const filteredNavigation = useMemo(() => {
     if (!search) return navigationItems;
@@ -155,6 +142,13 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
     setSearch("");
   };
 
+  const formatAmount = (amount: number) => {
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`;
+    }
+    return `$${(amount / 1000).toFixed(0)}K`;
+  };
+
   const hasResults =
     filteredLoans.length > 0 ||
     filteredDocuments.length > 0 ||
@@ -169,13 +163,20 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
         onValueChange={setSearch}
       />
       <CommandList>
-        {!hasResults && <CommandEmpty>No results found.</CommandEmpty>}
+        {isLoading && search && (
+          <div className="flex items-center justify-center py-6 text-muted-foreground">
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <span className="text-sm">Loading...</span>
+          </div>
+        )}
+
+        {!isLoading && !hasResults && <CommandEmpty>No results found.</CommandEmpty>}
 
         {/* Loans Results */}
         {filteredLoans.length > 0 && (
           <>
             <CommandGroup heading="Loans">
-              {filteredLoans.map((loan) => (
+              {filteredLoans.slice(0, 5).map((loan) => (
                 <CommandItem
                   key={loan.id}
                   onSelect={() => handleSelect("lifecycle")}
@@ -183,15 +184,17 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
                 >
                   <Building className="mr-2 h-4 w-4 text-primary" />
                   <div className="flex-1">
-                    <span className="font-medium">{loan.borrower}</span>
-                    <span className="text-muted-foreground ml-2 text-xs">{loan.id}</span>
+                    <span className="font-medium">{loan.borrower_name}</span>
+                    <span className="text-muted-foreground ml-2 text-xs">
+                      {loan.id.slice(0, 8)}...
+                    </span>
                   </div>
                   <Badge variant="outline" className="ml-2 text-xs">
-                    {loan.amount}
+                    {formatAmount(loan.amount)}
                   </Badge>
                   <Badge
-                    variant={loan.status === "Active" ? "default" : "secondary"}
-                    className="ml-1 text-xs"
+                    variant={loan.status === "active" ? "default" : "secondary"}
+                    className="ml-1 text-xs capitalize"
                   >
                     {loan.status}
                   </Badge>
@@ -206,7 +209,7 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
         {filteredDocuments.length > 0 && (
           <>
             <CommandGroup heading="Documents">
-              {filteredDocuments.map((doc) => (
+              {filteredDocuments.slice(0, 5).map((doc) => (
                 <CommandItem
                   key={doc.id}
                   onSelect={() => handleSelect("documents")}
@@ -230,7 +233,7 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
         {filteredTrades.length > 0 && (
           <>
             <CommandGroup heading="Trades">
-              {filteredTrades.map((trade) => (
+              {filteredTrades.slice(0, 5).map((trade) => (
                 <CommandItem
                   key={trade.id}
                   onSelect={() => handleSelect("trading")}
@@ -238,8 +241,10 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
                 >
                   <ArrowRightLeft className="mr-2 h-4 w-4 text-yellow-500" />
                   <div className="flex-1">
-                    <span className="font-medium">{trade.borrower}</span>
-                    <span className="text-muted-foreground ml-2 text-xs">{trade.id}</span>
+                    <span className="font-medium">{trade.borrower_name}</span>
+                    <span className="text-muted-foreground ml-2 text-xs">
+                      {trade.id.slice(0, 8)}...
+                    </span>
                   </div>
                   <Badge
                     variant={trade.side === "BUY" ? "default" : "secondary"}
@@ -248,7 +253,7 @@ export function CommandPalette({ onNavigate }: CommandPaletteProps) {
                     {trade.side}
                   </Badge>
                   <span className="text-xs text-muted-foreground ml-1">
-                    {trade.amount} @ {trade.price}
+                    {formatAmount(trade.amount)} @ {trade.price.toFixed(2)}
                   </span>
                 </CommandItem>
               ))}

@@ -47,6 +47,98 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          created_at: string
+          created_by: string
+          file_path: string | null
+          id: string
+          loan_id: string | null
+          name: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          file_path?: string | null
+          id?: string
+          loan_id?: string | null
+          name: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          file_path?: string | null
+          id?: string
+          loan_id?: string | null
+          name?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          amount: number
+          assigned_officer_id: string | null
+          borrower_name: string
+          created_at: string
+          created_by: string
+          currency: string
+          id: string
+          interest_rate: number | null
+          maturity_date: string | null
+          progress: number | null
+          stage: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          assigned_officer_id?: string | null
+          borrower_name: string
+          created_at?: string
+          created_by: string
+          currency?: string
+          id?: string
+          interest_rate?: number | null
+          maturity_date?: string | null
+          progress?: number | null
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          assigned_officer_id?: string | null
+          borrower_name?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          id?: string
+          interest_rate?: number | null
+          maturity_date?: string | null
+          progress?: number | null
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_settings: {
         Row: {
           audit_critical: boolean
@@ -178,6 +270,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      trades: {
+        Row: {
+          amount: number
+          borrower_name: string
+          created_at: string
+          id: string
+          loan_id: string | null
+          price: number
+          side: string
+          status: string
+          trader_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          borrower_name: string
+          created_at?: string
+          id?: string
+          loan_id?: string | null
+          price: number
+          side: string
+          status?: string
+          trader_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          borrower_name?: string
+          created_at?: string
+          id?: string
+          loan_id?: string | null
+          price?: number
+          side?: string
+          status?: string
+          trader_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
