@@ -52,7 +52,7 @@ const routeMap: Record<string, string> = {
 
 // Role-based navigation items
 const getNavItemsForRole = (userRole: string | null): NavItem[] => {
-  const baseItems = [
+  const baseItems: NavItem[] = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
   ];
@@ -61,10 +61,10 @@ const getNavItemsForRole = (userRole: string | null): NavItem[] => {
     case 'admin':
       return [
         ...baseItems,
-        { id: "documents", label: "Documents", icon: FileText, badge: "3", badgeType: "default" },
-        { id: "trading", label: "Trading Board", icon: ArrowRightLeft, badge: "LIVE", badgeType: "success" },
+        { id: "documents", label: "Documents", icon: FileText, badge: "3", badgeType: "default" as const },
+        { id: "trading", label: "Trading Board", icon: ArrowRightLeft, badge: "LIVE", badgeType: "success" as const },
         { id: "compliance", label: "Compliance", icon: Shield },
-        { id: "lifecycle", label: "Loan Lifecycle", icon: LineChart, badge: "2", badgeType: "warning" },
+        { id: "lifecycle", label: "Loan Lifecycle", icon: LineChart, badge: "2", badgeType: "warning" as const },
         { id: "esg", label: "ESG Intelligence", icon: Leaf },
         { id: "reports", label: "Reports", icon: FileText },
         { id: "scheduled-reports", label: "Scheduled Reports", icon: Calendar },
@@ -73,8 +73,8 @@ const getNavItemsForRole = (userRole: string | null): NavItem[] => {
     case 'loan_officer':
       return [
         ...baseItems,
-        { id: "documents", label: "Documents", icon: FileText, badge: "3", badgeType: "default" },
-        { id: "lifecycle", label: "Loan Lifecycle", icon: LineChart, badge: "2", badgeType: "warning" },
+        { id: "documents", label: "Documents", icon: FileText, badge: "3", badgeType: "default" as const },
+        { id: "lifecycle", label: "Loan Lifecycle", icon: LineChart, badge: "2", badgeType: "warning" as const },
         { id: "esg", label: "ESG Intelligence", icon: Leaf },
         { id: "reports", label: "Reports", icon: FileText },
         { id: "scheduled-reports", label: "Scheduled Reports", icon: Calendar },
@@ -83,7 +83,7 @@ const getNavItemsForRole = (userRole: string | null): NavItem[] => {
     case 'trader':
       return [
         ...baseItems,
-        { id: "trading", label: "Trading Board", icon: ArrowRightLeft, badge: "LIVE", badgeType: "success" },
+        { id: "trading", label: "Trading Board", icon: ArrowRightLeft, badge: "LIVE", badgeType: "success" as const },
         { id: "reports", label: "Reports", icon: FileText },
         { id: "scheduled-reports", label: "Scheduled Reports", icon: Calendar },
       ];
@@ -103,8 +103,8 @@ const getNavItemsForRole = (userRole: string | null): NavItem[] => {
 };
 
 const getBottomNavItemsForRole = (userRole: string | null): NavItem[] => {
-  const baseItems = [
-    { id: "notifications", label: "Notifications", icon: Bell, badge: "5", badgeType: "destructive" },
+  const baseItems: NavItem[] = [
+    { id: "notifications", label: "Notifications", icon: Bell, badge: "5", badgeType: "destructive" as const },
     { id: "profile", label: "Profile", icon: User },
   ];
 
